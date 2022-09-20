@@ -21,7 +21,7 @@ def format_text(timetable, classroom):
     text += "\n\nРасписание для %s:" % classroom
     try:
         for lesson in timetable[classroom]:
-            text += "\n%s | %s. %s %s" % (lesson['time'], lesson['number'], lesson['lesson'], lesson['cabinet'])
+            text += "\n%s. %s %s" % (lesson['number'], lesson['lesson'], lesson['cabinet'])
     except KeyError as error:
         print(error)
         text += "\nРасписание для %s не найдено"%classroom
