@@ -29,8 +29,8 @@ async def get_latest(message: Message):
     args = message.get_args().split()
     if len(args) < 1:
         await message.answer("Пожалуйста, укажи класс.\n\nПример: /latest 11Б")
-    elif check_classroom(args[0]):
-        classroom = args[0]
+    elif check_classroom(args[0].upper()):
+        classroom = args[0].upper()
         timetable = getTimetable("files/" + Attachment.get_latest_attachment(), classrooms)
         text = format_text(timetable, classroom)
         await message.answer(text)
@@ -78,7 +78,7 @@ async def unsubscribe_timetables(message: Message):
     args = message.get_args().split()
     if message.chat.type == 'private':
         user = User.get_user_by_id(message.from_user.id)
-        await user.remove_classroom() if len(args) < 1 else await user.remove_classroom(args[0])
+        await user.remove_classroom() if len(args) < 1 else await user.remove_classroom(args[0].upper())
         await message.answer("Понял принял, отписал.")
     else:
         group = Group(chat_id=message.chat.id)
