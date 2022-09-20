@@ -27,17 +27,16 @@ async def send_all(message: Message):
 
 
 async def send_all_groups(message: Message):
-    if message.from_user.id in admin_id:
-        groups = await Group.get_all_groups()
-        for group in groups:
-            text = message.text.replace("/gall", "")
-            try:
-                await message.bot.send_message(group.chat_id, text)
-            except aiogram.utils.exceptions.BotKicked as error:
-                print(error)
-                await group.delete_group()
-                continue
-            await asyncio.sleep(1)
+    groups = await Group.get_all_groups()
+    for group in groups:
+        text = message.text.replace("/gall", "")
+        try:
+            await message.bot.send_message(group.chat_id, text)
+        except aiogram.utils.exceptions.BotKicked as error:
+            print(error)
+            await group.delete_group()
+            continue
+        await asyncio.sleep(1)
 
 async def get_count_of_users(message: Message):
         count = User.get_count_of_users()

@@ -19,6 +19,7 @@ def getTimetable(excel_file, classrooms):
                     subjCell = sheet[row + str(i + j)].value
                     lessonNumberCell = sheet["A" + str(i + j)].value
                     cabCell = sheet[cabRows[classRows.index(row)] + str(i + j)].value
+                    timeCell = sheet[timeRow + str(i+j)].value
 
                     if isinstance(subjCell, str) and subjCell.__contains__("2 смена") or isinstance(subjCell,
                                                                                                     str) and subjCell.replace(
@@ -29,7 +30,7 @@ def getTimetable(excel_file, classrooms):
                             if row + str(i + j) in cell:
                                 subjCell = sheet.cell(cell.left[0][0], cell.left[0][1]).value
                                 break
-                    lesson = {"number": lessonNumberCell, "lesson": subjCell, "cabinet": cabCell}
+                    lesson = {"number": lessonNumberCell, "lesson": subjCell, "cabinet": cabCell, "time": timeCell}
                     timetables[classCell].append(lesson)
                     j += 1
 

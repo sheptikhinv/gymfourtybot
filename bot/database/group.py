@@ -42,7 +42,7 @@ class Group:
             groups = []
 
             for record in result:
-                groups.append(Group(chat_id=record[0]))
+                groups.append(Group(chat_id=record[0], classroom=record[1]))
 
         except sqlite3.Error as error:
             print(error)
