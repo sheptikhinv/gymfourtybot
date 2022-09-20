@@ -1,0 +1,4 @@
+aiogram
+netschoolapi
+openpyxl
+python-dotenv
