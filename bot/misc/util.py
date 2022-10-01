@@ -18,6 +18,7 @@ def check_classroom(classroom: str):
 
 def format_text(timetable, classroom):
     text = "Новые изменения в расписании!"
+    text += "\nДата: %s"%timetable["date"].capitalize()
     text += "\n\nРасписание для %s:" % classroom
     try:
         for lesson in timetable[classroom]:
@@ -37,7 +38,6 @@ async def check_timetables(sleep_for, bot: Bot):
             users = await User.get_all_users()
             groups = await Group.get_all_groups()
             for timetable in timetables:
-                print(timetable)
                 for user in users:
                     user_classrooms = user.get_classrooms()
                     if user_classrooms is None:
@@ -53,10 +53,9 @@ async def check_timetables(sleep_for, bot: Bot):
                             continue
                     await asyncio.sleep(2)
                 for group in groups:
-                    classroom = group.classroom
-                    if classroom is None:
+                    if group.classroom is None:
                         continue
-                    text = format_text(timetable, classroom)
+                    text = format_text(timetable, group.classroom)
                     try:
                         await bot.send_message(group.chat_id, text)
                     except aiogram.utils.exceptions.BotKicked as error:

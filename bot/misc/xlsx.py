@@ -14,6 +14,7 @@ def getTimetable(excel_file, classrooms):
             classCell = str(sheet[row + str(i)].value).replace(" ", "")
             if classCell in classrooms:
                 timetables[classCell] = []
+                timetables["date"] = table.sheetnames[0]
                 j = 1
                 while True:
                     subjCell = sheet[row + str(i + j)].value
