@@ -29,6 +29,17 @@ def format_text(timetable, classroom):
     return text.replace("None", "")
 
 
+def get_time_text(timetable, classroom):
+    text = "Расписание звонков:"
+    try:
+        for lesson in timetable[classroom]:
+            text += "\n%s. %s"%(lesson["number"], lesson["time"])
+    except KeyError as error:
+        print(error)
+        text += "\nРасписание для %s не найдено"%classroom
+    return text.replace("None", "")
+
+
 async def check_timetables(sleep_for, bot: Bot):
     while True:
         print("Checking for timetables...")

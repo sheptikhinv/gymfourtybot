@@ -6,9 +6,12 @@ from aiogram.types import Message, CallbackQuery
 from bot.database.attachment import Attachment
 from bot.database.group import Group
 from bot.database.user import User
-from bot.misc.util import check_classroom, format_text, classrooms
-from bot.misc.xlsx import getTimetable
 from bot.keyboards.inline import get_main_menu, get_subscribed_classrooms, get_classroom_menu
+from bot.misc.util import check_classroom, format_text, classrooms, get_time_text
+from bot.misc.xlsx import getTimetable
+
+main_menu_message = "Главное меню."
+class_choose_message = "Выберите класс"
 
 
 async def start(message: Message):
@@ -22,7 +25,7 @@ async def start(message: Message):
         "Привет-привет.\nЭтот бот гениальная альтернатива скачиванию расписания из сетевого!!\nПожалуйста, учитывайте что ошибки всё-таки имеют место быть и иногда расписание может быть неверным! Спасибо :)\n\nПолный список команд доступен через /help")
     await message.answer(
         "/help - вызов этого сообщения\n/subscribe 11Б - подписка на обновления расписания класса\n/latest 11Б - получить новейшее расписание класса\n/menu - глав. меню.")
-    await message.answer("Выбираем пунктики:", reply_markup=get_main_menu())
+    await message.answer(main_menu_message, reply_markup=get_main_menu())
 
 
 async def get_latest(message: Message):
@@ -40,7 +43,7 @@ async def get_latest(message: Message):
 
 async def send_help(message: Message):
     await message.answer(
-        "/help - вызов этого сообщения\n/subscribe 11Б - подписка на обновления расписания класса\n/latest 11Б - получить новейшее расписание класса")
+        "/help - вызов этого сообщения\n/subscribe 11Б - подписка на обновления расписания класса\n/latest 11Б - получить новейшее расписание класса\n/menu - главное меню")
 
 
 async def subscribe_timetables(message: Message):
@@ -88,19 +91,24 @@ async def unsubscribe_timetables(message: Message):
 
 async def send_main_menu(message: Message):
     if message.chat.type == 'private':
-        await message.answer("Выбираем пунктики:", reply_markup=get_main_menu())
+        await message.answer(main_menu_message, reply_markup=get_main_menu())
 
 
 async def sub_menu(call: CallbackQuery):
-    await call.message.edit_text("Выберите класс", reply_markup=get_classroom_menu("subscribe"))
+    await call.message.edit_text(class_choose_message, reply_markup=get_classroom_menu("subscribe"))
 
 
 async def latest_menu(call: CallbackQuery):
-    await call.message.edit_text("Выберите класс", reply_markup=get_classroom_menu("latest"))
+    await call.message.edit_text(class_choose_message, reply_markup=get_classroom_menu("latest"))
 
 
 async def unsub_menu(call: CallbackQuery):
-    await call.message.edit_text("Выберите класс", reply_markup=get_subscribed_classrooms(User.get_user_by_id(call.from_user.id)))
+    await call.message.edit_text(class_choose_message,
+                                 reply_markup=get_subscribed_classrooms(User.get_user_by_id(call.from_user.id)))
+
+
+async def time_menu(call: CallbackQuery):
+    await call.message.edit_text(class_choose_message, reply_markup=get_classroom_menu("time"))
 
 
 async def subscribe(call: CallbackQuery):
@@ -108,7 +116,7 @@ async def subscribe(call: CallbackQuery):
     classroom = call.data.split()[1]
     await user.add_classroom(classroom)
     await call.message.answer("Вы успешно подписаны на обновления %s" % classroom)
-    await call.message.edit_text("Выбираем пунктики:", reply_markup=get_main_menu())
+    await call.message.edit_text(main_menu_message, reply_markup=get_main_menu())
 
 
 async def latest(call: CallbackQuery):
@@ -116,7 +124,15 @@ async def latest(call: CallbackQuery):
     timetable = getTimetable("files/" + Attachment.get_latest_attachment(), classrooms)
     text = format_text(timetable, classroom)
     await call.message.answer(text)
-    await call.message.edit_text("Выбираем пунктики:", reply_markup=get_main_menu())
+    await call.message.edit_text(main_menu_message, reply_markup=get_main_menu())
+
+
+async def time(call: CallbackQuery):
+    classroom = call.data.split()[1]
+    timetable = getTimetable("files/" + Attachment.get_latest_attachment(), classrooms)
+    text = get_time_text(timetable, classroom)
+    await call.message.answer(text)
+    await call.message.edit_text(main_menu_message, reply_markup=get_main_menu())
 
 
 async def unsubscribe(call: CallbackQuery):
@@ -128,12 +144,11 @@ async def unsubscribe(call: CallbackQuery):
     else:
         await user.remove_classroom()
         await call.message.answer("Вы успешно отписаны от всех классов.")
-    await call.message.edit_text("Выбираем пунктики:", reply_markup=get_main_menu())
-
+    await call.message.edit_text(main_menu_message, reply_markup=get_main_menu())
 
 
 async def back(call: CallbackQuery):
-    await call.message.edit_text("Выбираем пунктики:", reply_markup=get_main_menu())
+    await call.message.edit_text(main_menu_message, reply_markup=get_main_menu())
 
 
 def register_user_handlers(dp: Dispatcher):
@@ -143,9 +158,11 @@ def register_user_handlers(dp: Dispatcher):
     dp.register_message_handler(subscribe_timetables, commands=['subscribe'])
     dp.register_message_handler(unsubscribe_timetables, commands=['unsubscribe'])
     dp.register_message_handler(send_main_menu, commands=['menu'])
+    dp.register_callback_query_handler(time_menu, lambda callback_query: callback_query.data == "time_menu")
     dp.register_callback_query_handler(sub_menu, lambda callback_query: callback_query.data == "sub_menu")
     dp.register_callback_query_handler(latest_menu, lambda callback_query: callback_query.data == "latest_menu")
     dp.register_callback_query_handler(unsub_menu, lambda callback_query: callback_query.data == "unsub_menu")
+    dp.register_callback_query_handler(time, lambda callback_query: "time" in callback_query.data)
     dp.register_callback_query_handler(unsubscribe, lambda callback_query: "unsubscribe" in callback_query.data)
     dp.register_callback_query_handler(subscribe, lambda callback_query: "subscribe" in callback_query.data)
     dp.register_callback_query_handler(latest, lambda callback_query: "latest" in callback_query.data)

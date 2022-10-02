@@ -13,7 +13,8 @@ def get_main_menu():
                                              InlineKeyboardButton(text='Новейшее расп.', callback_data='latest_menu')
                                          ],
                                          [
-                                             InlineKeyboardButton(text="Отписаться", callback_data="unsub_menu")
+                                             InlineKeyboardButton(text="Отписаться", callback_data="unsub_menu"),
+                                             InlineKeyboardButton(text="Звонки", callback_data='time_menu')
                                          ],
                                          [
                                              InlineKeyboardButton(text='Написать в поддержку 😎',
