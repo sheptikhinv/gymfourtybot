@@ -35,6 +35,14 @@ async def finished_mailing_message(users_count: int, groups_count: int, messages
     await bot.send_message(admin_id, text=text)
 
 
+async def errors_found(users_count, groups_count, error, bot):
+    text = "Ну пиздец, ошибка какая-то"
+    text += "Отправлено %s пользователяем, %s группам" % (users_count, groups_count)
+    text += error
+
+    await bot.send_message(admin_id, text=text)
+
+
 async def send_all(message: Message):
     text = message.text.replace("/all ", "")
     users = await User.get_all_users()
@@ -49,22 +57,23 @@ async def send_all(message: Message):
         try:
             await message.bot.send_message(user.chat_id, text)
             messages_count += 1
-        except aiogram.utils.exceptions.Unauthorized as error:
+        except (aiogram.utils.exceptions.Unauthorized, aiogram.utils.exceptions.ChatNotFound) as error:
             await user.delete_user()
-            continue
-        users_count += 1
+        except aiogram.utils.exceptions.BadRequest as error:
+            await errors_found(users_count, groups_count, error.text, message.bot)
+        else:
+            users_count += 1
         await asyncio.sleep(0.5)
     for group in groups:
         try:
             await message.bot.send_message(group.chat_id, text)
             messages_count += 1
-        except aiogram.utils.exceptions.Unauthorized as error:
+        except (aiogram.utils.exceptions.Unauthorized, aiogram.utils.exceptions.GroupDeactivated, aiogram.utils.exceptions.ChatNotFound) as error:
             await group.delete_group()
-            continue
-        except aiogram.utils.exceptions.GroupDeactivated as error:
-            await group.delete_group()
-            continue
-        groups_count += 1
+        except aiogram.utils.exceptions.BadRequest as error:
+            await errors_found(users_count, groups_count, error.text, message.bot)
+        else:
+            groups_count += 1
         await asyncio.sleep(0.5)
     used_time = int(time.time() - start_time)
     await finished_mailing_message(users_count, groups_count, messages_count, used_time, message.bot)
