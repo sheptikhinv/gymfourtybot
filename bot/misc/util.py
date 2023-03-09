@@ -93,7 +93,7 @@ async def check_timetables(sleep_for, bot: Bot):
                             await bot.send_message(user.chat_id, text)
                             messages_count += 1
                             await asyncio.sleep(0.5)
-                        except aiogram.utils.exceptions.BotBlocked as error:
+                        except aiogram.utils.exceptions.Unauthorized as error:
                             await user.delete_user()
                             continue
                     users_count += 1
@@ -105,7 +105,10 @@ async def check_timetables(sleep_for, bot: Bot):
                     try:
                         await bot.send_message(group.chat_id, text)
                         messages_count += 1
-                    except aiogram.utils.exceptions.BotKicked as error:
+                    except aiogram.utils.exceptions.Unauthorized as error:
+                        await Group.delete_group(group.chat_id)
+                        continue
+                    except aiogram.utils.exceptions.GroupDeactivated as error:
                         await Group.delete_group(group.chat_id)
                         continue
                     groups_count += 1

@@ -49,7 +49,7 @@ async def send_all(message: Message):
         try:
             await message.bot.send_message(user.chat_id, text)
             messages_count += 1
-        except aiogram.utils.exceptions.BotBlocked as error:
+        except aiogram.utils.exceptions.Unauthorized as error:
             await user.delete_user()
             continue
         users_count += 1
@@ -58,7 +58,10 @@ async def send_all(message: Message):
         try:
             await message.bot.send_message(group.chat_id, text)
             messages_count += 1
-        except aiogram.utils.exceptions.BotKicked as error:
+        except aiogram.utils.exceptions.Unauthorized as error:
+            await group.delete_group()
+            continue
+        except aiogram.utils.exceptions.GroupDeactivated as error:
             await group.delete_group()
             continue
         groups_count += 1
