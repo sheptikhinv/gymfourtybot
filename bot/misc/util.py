@@ -46,6 +46,7 @@ def get_time_text(timetable, classroom):
 
 
 async def check_timetables(sleep_for, bot: Bot):
+    recent_timetable = {}
     while True:
         print("Checking for timetables...")
         timetables = await get_new_timetables(classrooms)
@@ -55,7 +56,7 @@ async def check_timetables(sleep_for, bot: Bot):
             groups = await Group.get_all_groups()
             for timetable in timetables:
                 await starting_mailing_message(len(users), len(groups), timetable["date"].capitalize(), bot)
-                start_time = time.time()
+                start_time = time.time()  # Старт таймера рассылки для статы
                 users_count = 0
                 groups_count = 0
                 messages_count = 0
@@ -64,7 +65,11 @@ async def check_timetables(sleep_for, bot: Bot):
                     if user_classrooms is None:
                         continue
                     for classroom in user_classrooms:
-                        text = format_text(timetable, classroom[0])
+                        if recent_timetable != {}:
+                            if timetable["date"] == recent_timetable["date"] and timetable[classroom[0]] == \
+                                    recent_timetable[classroom[0]]:
+                                continue
+                        text = format_text(timetable, classroom[0])  ##TODO: ПОФИКСИТЬ ЕБАНОЕ classroom[0]
                         try:
                             await bot.send_message(user.chat_id, text)
                             messages_count += 1
@@ -78,11 +83,15 @@ async def check_timetables(sleep_for, bot: Bot):
                 for group in groups:
                     if group.classroom is None:
                         continue
+                    if recent_timetable != {}:
+                        if timetable["date"] == recent_timetable["date"] and timetable[group.classroom] == recent_timetable[group.classroom]:
+                            continue
                     text = format_text(timetable, group.classroom)
                     try:
                         await bot.send_message(group.chat_id, text)
                         messages_count += 1
-                    except (aiogram.utils.exceptions.Unauthorized, aiogram.utils.exceptions.GroupDeactivated, aiogram.utils.exceptions.ChatNotFound) as error:
+                    except (aiogram.utils.exceptions.Unauthorized, aiogram.utils.exceptions.GroupDeactivated,
+                            aiogram.utils.exceptions.ChatNotFound) as error:
                         await Group.delete_group(group.chat_id)
                     except aiogram.utils.exceptions.BadRequest as error:
                         await errors_found(users_count, groups_count, error.text, bot)
@@ -91,5 +100,6 @@ async def check_timetables(sleep_for, bot: Bot):
                     await asyncio.sleep(0.5)
                 used_time = int(time.time() - start_time)
                 await finished_mailing_message(users_count, groups_count, messages_count, used_time, bot)
+            recent_timetable = timetables[-1]
             print("Timetables sent succesfully!")
         await asyncio.sleep(sleep_for)
