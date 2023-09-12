@@ -19,6 +19,7 @@ async def get_new_timetables(classrooms):
     for announcement in announcements:
         if "расписание" in announcement.name.lower() and announcement.attachments != [] or "расписании" in announcement.name.lower() and announcement.attachments != []:
             for attachment in announcement.attachments:
+                if not ".xlsx" in attachment.name: continue
                 name = attachment.name.replace(".xlsx", "") + str(attachment.id) + ".xlsx"
                 attachmentObj = Attachment(name, attachment.id, announcement.post_date)
                 if "11)" in attachment.name and attachmentObj.is_new():

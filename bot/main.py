@@ -2,6 +2,7 @@ import asyncio
 
 from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.types import AllowedUpdates
 from aiogram.utils import executor
 
 from bot.handlers import register_all_handlers
@@ -18,4 +19,4 @@ def start_bot():
     dp = Dispatcher(bot, storage=MemoryStorage())
     loop = asyncio.get_event_loop()
     task = loop.create_task(check_timetables(600, bot))
-    executor.start_polling(dp, skip_updates=False, on_startup=__on_start_up)
+    executor.start_polling(dp, skip_updates=False, on_startup=__on_start_up, allowed_updates=AllowedUpdates.all())

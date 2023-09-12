@@ -12,7 +12,7 @@ from bot.misc.netschool import get_new_timetables
 
 admin_id = AdminKeys.ADMID
 
-classrooms = ["5А", "5Б", "5В", "6А", "6Б", "6В", "7А", "7Б", "7В", "8А", "8Б", "9А", "9Б", "10А", "10Б", "11А", "11Б"]
+classrooms = ["5А", "5Б", "5В", "5Г", "5Д", "6А", "6Б", "6В", "6Г", "7А", "7Б", "7В", "8А", "8Б", "8В", "9А", "9Б", "10А", "10Б", "11А", "11Б"]
 
 
 def check_classroom(classroom: str):
